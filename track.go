@@ -55,3 +55,9 @@ func (ts *Tracks) getIDs() []uuid.UUID {
 
 	return ids
 }
+
+func (ts *Tracks) getTrack(id uuid.UUID) (Track, bool) {
+	track, ok := ts.Tracks[id]
+
+	return track, ok
+}

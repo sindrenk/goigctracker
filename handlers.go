@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/marni/goigc"
 )
 
@@ -17,11 +19,15 @@ type Metainfo struct {
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(r.URL.Path, "/")
 	if r.URL.Path == "/igcinfo/api/" {
 		infoHandler(w, r)
 		return
 	} else if r.URL.Path == "/igcinfo/api/igc/" {
 		igcHandler(w, r)
+		return
+	} else if id, err := uuid.Parse(parts[4]); strings.HasPrefix(r.URL.Path, "/igcinfo/api/igc/") && err == nil {
+		trackHandler(w, r, id)
 		return
 	}
 
@@ -34,10 +40,10 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-	} else {
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(js)
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+
 }
 
 func igcHandler(w http.ResponseWriter, r *http.Request) {
@@ -70,6 +76,22 @@ func igcHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(tracks.getIDs())
 	}
+}
+
+func trackHandler(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+	track, ok := tracks.Tracks[id]
+
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	js, err := json.Marshal(track)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
 }
 
 // Returns a string with the time since time a in ISO 8601 format.

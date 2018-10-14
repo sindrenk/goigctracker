@@ -14,5 +14,5 @@ func main() {
 	tracks.init()
 
 	http.HandleFunc("/igcinfo/api/", rootHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":80", nil))
 }

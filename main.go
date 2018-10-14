@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -14,5 +15,5 @@ func main() {
 	tracks.init()
 
 	http.HandleFunc("/igcinfo/api/", rootHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(os.Getenv("PORT"), nil))
 }

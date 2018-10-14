@@ -15,5 +15,5 @@ func main() {
 	tracks.init()
 
 	http.HandleFunc("/igcinfo/api/", rootHandler)
-	log.Fatal(http.ListenAndServe(os.Getenv("PORT"), nil))
+	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
 }

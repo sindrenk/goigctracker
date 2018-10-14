@@ -1,6 +1,6 @@
 Provides a JSON API endpoint for the IGC standard, written in golang.
 
-### Installation instructions
+### Buikd instructions
 ```bash
 mkdir -p $GOPATH/src/github.com/sindrenk/
 cd $GOPATH/src/github.com/sindrenk/

@@ -7,4 +7,5 @@ cd $GOPATH/src/github.com/sindrenk/
 git clone https://github.com/sindrenk/goigctracker.git
 cd goigctracker/
 go get -u
+go build
 ```

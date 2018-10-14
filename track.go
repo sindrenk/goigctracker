@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,6 +21,30 @@ type Tracks struct {
 	Tracks map[uuid.UUID]Track
 }
 
+// Returns the contents of a specific field, as is named in JSON
+func (t *Track) getField(field string) (string, bool) {
+	var f string
+	ok := true
+	switch field {
+	case "H_date":
+		f = t.Hdate.String()
+	case "pilot":
+		f = t.Pilot
+	case "glider":
+		f = t.Glider
+	case "glider_id":
+		f = t.GliderID
+	case "track_length":
+		f = fmt.Sprintf("%f", t.TrackLength)
+	default:
+		f = "INVALID FIELD"
+		ok = false
+	}
+
+	return f, ok
+}
+
+// Makes the tracks.Tracks map. Must be called before struct Tracks is used.
 func (ts *Tracks) init() {
 	ts.Tracks = make(map[uuid.UUID]Track)
 }
@@ -46,16 +71,19 @@ func (ts *Tracks) add(t Track) (uuid.UUID, error) {
 	return id, nil
 }
 
+// Gets the IDs of all the saved tracks
 func (ts *Tracks) getIDs() []uuid.UUID {
 	ids := make([]uuid.UUID, len(ts.Tracks))
 	i := 0
 	for k := range ts.Tracks {
 		ids[i] = k
+		i++
 	}
 
 	return ids
 }
 
+// Gets a track from tracks by its ID
 func (ts *Tracks) getTrack(id uuid.UUID) (Track, bool) {
 	track, ok := ts.Tracks[id]
 

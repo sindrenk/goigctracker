@@ -7,7 +7,7 @@ import (
 )
 
 var startTime time.Time
-var tracks Tracks = Tracks{}
+var tracks Tracks
 
 func main() {
 	startTime = time.Now()

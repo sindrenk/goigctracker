@@ -18,6 +18,7 @@ type Metainfo struct {
 	Version string `json:"version"`
 }
 
+// Handles all requests to /igcinfo/api/ and calls on the appropriate function
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if r.URL.Path == "/igcinfo/api/" {
@@ -26,14 +27,18 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	} else if r.URL.Path == "/igcinfo/api/igc/" {
 		igcHandler(w, r)
 		return
-	} else if id, err := uuid.Parse(parts[4]); strings.HasPrefix(r.URL.Path, "/igcinfo/api/igc/") && err == nil {
+	} else if id, err := uuid.Parse(parts[4]); strings.HasPrefix(r.URL.Path, "/igcinfo/api/igc/") && err == nil && len(parts) < 6 {
 		trackHandler(w, r, id)
+		return
+	} else if id, err := uuid.Parse(parts[4]); strings.HasPrefix(r.URL.Path, "/igcinfo/api/igc/") && err == nil && len(parts[5]) > 0 {
+		trackFieldHandler(w, r, id, parts[5])
 		return
 	}
 
 	http.NotFound(w, r)
 }
 
+// Gets called on by rootHandler, serves JSON for metadata about the API
 func infoHandler(w http.ResponseWriter, r *http.Request) {
 	info := Metainfo{Uptime: timeSince(startTime), Info: "Service for IGC tracks.", Version: "v1"}
 	js, err := json.Marshal(info)
@@ -46,6 +51,7 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// Gets called on my rootHandler, on POST it recives an url of a new IGC file to save, on GET it serves an array of the ID's of the saved tracks
 func igcHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
@@ -78,8 +84,9 @@ func igcHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Gets called on by rootHandler, recives the ID of a track then returns its data as JSON
 func trackHandler(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
-	track, ok := tracks.Tracks[id]
+	track, ok := tracks.getTrack(id)
 
 	if !ok {
 		http.NotFound(w, r)
@@ -92,6 +99,26 @@ func trackHandler(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
+}
+
+// Gets called on by rootHandler, recives the ID of a track and the name of a field, provides that specific field as plain text
+func trackFieldHandler(w http.ResponseWriter, r *http.Request, id uuid.UUID, field string) {
+	track, ok := tracks.getTrack(id)
+
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	f, ok := track.getField(field)
+
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	fmt.Fprint(w, f)
+
 }
 
 // Returns a string with the time since time a in ISO 8601 format.
